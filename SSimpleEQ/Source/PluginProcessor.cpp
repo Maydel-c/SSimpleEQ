@@ -93,8 +93,14 @@ void SSimpleEQAudioProcessor::changeProgramName (int index, const juce::String& 
 //==============================================================================
 void SSimpleEQAudioProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
-    // Use this method as the place to do any pre-playback
-    // initialisation that you need..
+    juce::dsp::ProcessSpec spec;
+    
+    spec.maximumBlockSize = samplesPerBlock;
+    spec.sampleRate = sampleRate;
+    spec.numChannels = 1;
+    
+    leftChain.prepare(spec);
+    rightChain.prepare(spec);
 }
 
 void SSimpleEQAudioProcessor::releaseResources()
@@ -143,6 +149,16 @@ void SSimpleEQAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
     // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear (i, 0, buffer.getNumSamples());
+    
+    juce::dsp::AudioBlock<float> block (buffer);
+    auto leftBlock = block.getSingleChannelBlock(0);
+    auto rightBlock = block.getSingleChannelBlock(1);
+    
+    juce::dsp::ProcessContextReplacing<float> leftContext (leftBlock);
+    juce::dsp::ProcessContextReplacing<float> rightContext (rightBlock);
+    
+    leftChain.process(leftContext);
+    rightChain.process(rightContext);
 
 }
 
