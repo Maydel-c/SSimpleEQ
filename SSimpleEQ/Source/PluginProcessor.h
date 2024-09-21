@@ -102,23 +102,21 @@ private:
     
     
     template<typename ChainType, typename CoefficientType>
-    void updateCutFilter(ChainType& chain, // previously leftLowCut
-                         const CoefficientType& coefficients, // previously cutCoefficients
-//                         const ChainSettings& chainSettings) // Slope param will directly be passed in prepareToPlay and processBlock. So we don't need to get the entire chainSettings here
-                        const Slope& slope) // previously lowCutSlope
+    void updateCutFilter(ChainType& chain,
+                         const CoefficientType& coefficients,
+                        const Slope& slope)
     {
         chain.template setBypassed<0>(true);
         chain.template setBypassed<1>(true);
         chain.template setBypassed<2>(true);
         chain.template setBypassed<3>(true);
 
-        switch (slope) { // previously lowCutSlope
+        switch (slope) {
                 
             case Slope_48:
             {
                 update<3>(chain, coefficients);
-//                *leftLowCut.template get<3>().coefficients = *cutCoefficients[3];
-//                leftLowCut.template setBypassed<3>(false);
+
             }
             case Slope_36:
             {
@@ -134,41 +132,9 @@ private:
             }
             default:
                 break;
-                
-            
-//            case Slope_12:
-//                *leftLowCut.template get<0>().coefficients = *cutCoefficients[0];
-//                leftLowCut.template setBypassed<0>(false);
-//                break;
-//            case Slope_24:
-//                *leftLowCut.template get<0>().coefficients = *cutCoefficients[0];
-//                leftLowCut.template setBypassed<0>(false);
-//                *leftLowCut.template get<1>().coefficients = *cutCoefficients[1];
-//                leftLowCut.template setBypassed<1>(false);
-//                break;
-//            case Slope_36:
-//                *leftLowCut.template get<0>().coefficients = *cutCoefficients[0];
-//                leftLowCut.template setBypassed<0>(false);
-//                *leftLowCut.template get<1>().coefficients = *cutCoefficients[1];
-//                leftLowCut.template setBypassed<1>(false);
-//                *leftLowCut.template get<2>().coefficients = *cutCoefficients[2];
-//                leftLowCut.template setBypassed<2>(false);
-//                break;
-//            case Slope_48:
-//                *leftLowCut.template get<0>().coefficients = *cutCoefficients[0];
-//                leftLowCut.template setBypassed<0>(false);
-//                *leftLowCut.template get<1>().coefficients = *cutCoefficients[1];
-//                leftLowCut.template setBypassed<1>(false);
-//                *leftLowCut.template get<2>().coefficients = *cutCoefficients[2];
-//                leftLowCut.template setBypassed<2>(false);
-//                *leftLowCut.template get<3>().coefficients = *cutCoefficients[3];
-//                leftLowCut.template setBypassed<3>(false);
-//                break;
-//            default:
-//                break;
         }
     }
-    
+
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SSimpleEQAudioProcessor)
 };
