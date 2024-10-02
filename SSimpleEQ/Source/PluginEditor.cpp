@@ -31,27 +31,51 @@ void LookAndFeel::drawRotarySlider(juce::Graphics & g,
     g.setColour(Colour(255u, 154u, 1u));
     g.drawEllipse(bounds, 1.f);
     
-    // drawing the marker inside the slider and rotating it
-    auto center = bounds.getCentre();
     
-    Path p; // needed to make anything move
-    
-    Rectangle<float> r;
-    r.setLeft(center.getX() - 2);
-    r.setRight(center.getX() + 2);
-    r.setTop(bounds.getY());
-    r.setBottom(center.getY());
-    
-    p.addRectangle(r);
-    
-    jassert(rotaryStartAngle < rotaryEndAngle);
-    
-    auto sliderAngRad = jmap(sliderPosProportional, 0.f, 1.f, rotaryStartAngle, rotaryEndAngle);
-    
-    // rotating the narrow rectangle acc to the above radian angle - sliderAngRad
-    p.applyTransform(AffineTransform().rotated(sliderAngRad, center.getX(), center.getY()));
-    
-    g.fillPath(p);
+    if(auto* rswl = dynamic_cast<RotarySliderWithLabels*>(&slider))
+    {
+        
+        // drawing the marker inside the slider and rotating it
+        auto center = bounds.getCentre();
+        
+        Path p; // needed to make anything move
+        
+        Rectangle<float> r;
+        r.setLeft(center.getX() - 2);
+        r.setRight(center.getX() + 2);
+        r.setTop(bounds.getY());
+        r.setBottom(center.getY() - rswl->getTextHeight() * 1.5); // inner rectangle marker not starting from exact center. Saving space for text
+        
+        p.addRoundedRectangle(r, 2.f); // change from addRectangle to addRoundedRectangle
+        
+        jassert(rotaryStartAngle < rotaryEndAngle);
+        
+        auto sliderAngRad = jmap(sliderPosProportional, 0.f, 1.f, rotaryStartAngle, rotaryEndAngle);
+        
+        // rotating the narrow rectangle acc to the above radian angle - sliderAngRad
+        p.applyTransform(AffineTransform().rotated(sliderAngRad, center.getX(), center.getY()));
+        
+        g.fillPath(p);
+        
+        g.setFont(rswl->getTextHeight()); // uses the default and gives height
+        auto text = rswl->getDisplayString();
+        auto strWidth = g.getCurrentFont().getStringWidth(text);
+        
+        // changing the same rectangle now to use with text
+        r.setSize(strWidth + 4, rswl->getTextHeight() + 2);
+        
+        // setting the center of this rectangle to the center of bounding box
+        r.setCentre(bounds.getCentre());
+        
+        // making the text background black
+        g.setColour(Colours::black);
+        g.fillRect(r);
+        
+        // adding text making the text white
+        g.setColour(Colours::white);
+        g.drawFittedText(text, r.toNearestInt(), juce::Justification::centred, 1); // accepts Rectangle<int> as 2nd argument
+        
+    }
 }
 
 //==============================================================================
@@ -70,6 +94,7 @@ void RotarySliderWithLabels::paint(juce::Graphics &g)
     g.drawRect(getLocalBounds());
     g.setColour(Colours::yellow);
     g.drawRect(sliderBounds);
+
     
     getLookAndFeel().drawRotarySlider(g,
                                       sliderBounds.getX(),
@@ -97,6 +122,11 @@ juce::Rectangle<int> RotarySliderWithLabels::getSliderbounds() const
     r.setY(2); // 2 pixels from top
     
     return r;
+}
+
+juce::String RotarySliderWithLabels::getDisplayString() const
+{
+    return juce::String(getValue()); // return slider's value. Not displaying suffixes yet
 }
 
 //==============================================================================
