@@ -9,6 +9,52 @@
 #include "PluginProcessor.h"
 #include "PluginEditor.h"
 
+void LookAndFeel::drawRotarySlider(juce::Graphics & g,
+                                   int x,
+                                   int y,
+                                   int width,
+                                   int height,
+                                   float sliderPosProportional,
+                                   float rotaryStartAngle,
+                                   float rotaryEndAngle,
+                                   juce::Slider & slider)
+{
+    using namespace juce;
+    
+    auto bounds = Rectangle<float>(x, y, width, height);
+    
+    // creating the bg for slider
+    g.setColour(Colour(97u, 18u, 167u));
+    g.fillEllipse(bounds);
+    
+    // creating the border for slider
+    g.setColour(Colour(255u, 154u, 1u));
+    g.drawEllipse(bounds, 1.f);
+    
+    // drawing the marker inside the slider and rotating it
+    auto center = bounds.getCentre();
+    
+    Path p; // needed to make anything move
+    
+    Rectangle<float> r;
+    r.setLeft(center.getX() - 2);
+    r.setRight(center.getX() + 2);
+    r.setTop(bounds.getY());
+    r.setBottom(center.getY());
+    
+    p.addRectangle(r);
+    
+    jassert(rotaryStartAngle < rotaryEndAngle);
+    
+    auto sliderAngRad = jmap(sliderPosProportional, 0.f, 1.f, rotaryStartAngle, rotaryEndAngle);
+    
+    // rotating the narrow rectangle acc to the above radian angle - sliderAngRad
+    p.applyTransform(AffineTransform().rotated(sliderAngRad, center.getX(), center.getY()));
+    
+    g.fillPath(p);
+}
+
+//==============================================================================
 void RotarySliderWithLabels::paint(juce::Graphics &g)
 {
     using namespace juce;
