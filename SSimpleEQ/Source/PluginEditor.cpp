@@ -252,11 +252,30 @@ void ResponseCurveComponent::resized()
         20000
     };
     
-    g.setColour(Colours::white);
+    auto renderArea = getAnalysisArea(); // to cache the left right top bottom width
+    auto left = renderArea.getX();
+    auto right = renderArea.getRight();
+    auto top = renderArea.getY();
+    auto bottom = renderArea.getBottom();
+    auto width = renderArea.getWidth();
+    
+    Array<float> xs;
     for( auto f : freqs )
     {
         auto normX = mapFromLog10(f, 20.f, 20000.f);
+        xs.add(left + width * normX);
+    }
+    
+    g.setColour(Colours::dimgrey);
+//    for( auto f : freqs )
+//    {
+//        auto normX = mapFromLog10(f, 20.f, 20000.f);
 //        g.drawVerticalLine(getWidth() * normX, 0.f, getHeight());
+//    }
+    
+    for( auto x : xs )
+    {
+        g.drawVerticalLine(x, top, bottom);
     }
     
     Array<float> gain
@@ -264,13 +283,20 @@ void ResponseCurveComponent::resized()
         -24, -12, 0, 12, 24
     };
     
-    for( auto gDb : gain )
-    {
-        auto y = jmap(gDb, -24.f, 24.f, float(getHeight()), 0.f); // maps -24 to bottom of component, 24 to top
+//    for( auto gDb : gain )
+//    {
+//        auto y = jmap(gDb, -24.f, 24.f, float(getHeight()), 0.f); // maps -24 to bottom of component, 24 to top
 //        g.drawHorizontalLine(y, 0, getWidth()); // 0, getWidth() say we want line from left to right of entire component
+//    }
+    
+    for( auto gDb : gain)
+    {
+        auto y = jmap(gDb, -24.f, 24.f, float(bottom), float(top));
+        g.setColour(gDb == 0.f ? Colour(0u, 172u, 1u) : Colours::darkgrey); // for 0dB make line green, otherwise darkgrey
+        g.drawHorizontalLine(y, left, right);
     }
     
-    g.drawRect(getAnalysisArea());
+//    g.drawRect(getAnalysisArea());
 }
 
 juce::Rectangle<int> ResponseCurveComponent::getRenderArea()
