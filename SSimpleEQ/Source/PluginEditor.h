@@ -66,13 +66,18 @@ juce::Timer
     void timerCallback() override;
     
     void paint(juce::Graphics& g) override;
-    
+    void resized() override;
 private:
     SSimpleEQAudioProcessor& audioProcessor;
     juce::Atomic<bool> parametersChanged { false };
     MonoChain monoChain;
     
     void updateChain();
+    juce::Image background;
+    
+    juce::Rectangle<int> getRenderArea(); // Area in which the response curve and background will be drawn
+    
+    juce::Rectangle<int> getAnalysisArea();
 };
 
 //==============================================================================
