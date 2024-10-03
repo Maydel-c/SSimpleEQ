@@ -218,7 +218,6 @@ void ResponseCurveComponent::timerCallback()
     if(parametersChanged.compareAndSetBool(false, true))
     {
         updateChain();
-        // signal a repaint
         repaint();
     }
 }
@@ -267,11 +266,6 @@ void ResponseCurveComponent::resized()
     }
     
     g.setColour(Colours::dimgrey);
-//    for( auto f : freqs )
-//    {
-//        auto normX = mapFromLog10(f, 20.f, 20000.f);
-//        g.drawVerticalLine(getWidth() * normX, 0.f, getHeight());
-//    }
     
     for( auto x : xs )
     {
@@ -282,12 +276,6 @@ void ResponseCurveComponent::resized()
     {
         -24, -12, 0, 12, 24
     };
-    
-//    for( auto gDb : gain )
-//    {
-//        auto y = jmap(gDb, -24.f, 24.f, float(getHeight()), 0.f); // maps -24 to bottom of component, 24 to top
-//        g.drawHorizontalLine(y, 0, getWidth()); // 0, getWidth() say we want line from left to right of entire component
-//    }
     
     for( auto gDb : gain)
     {
@@ -349,16 +337,22 @@ void ResponseCurveComponent::resized()
         g.setColour(gDb == 0.f ? Colour(0u, 172u, 1u) : Colours::lightgrey);
         
         g.drawFittedText(str, r, juce::Justification::centred, 1);
+        
+        // for other side of labels
+        str.clear();
+        str << (gDb -24.f);
+        
+        r.setX(1);
+        textWidth = g.getCurrentFont().getStringWidth(str);
+        r.setSize(textWidth, fontHeight);
+        g.setColour(Colours::lightgrey);
+        g.drawFittedText(str, r, Justification::centred, 1);
     }
 }
 
 juce::Rectangle<int> ResponseCurveComponent::getRenderArea()
 {
     auto bounds = getLocalBounds();
-//    bounds.reduce(10, // JUCE_LIVE_CONSTANT(5),
-//                  8 //JUCE_LIVE_CONSTANT(5)); // constants should be in their separate lines
-//                  );
-    
     bounds.removeFromTop(12);
     bounds.removeFromBottom(2);
     bounds.removeFromLeft(20);
@@ -378,13 +372,10 @@ void ResponseCurveComponent::paint (juce::Graphics& g)
 {
     using namespace juce;
     
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll(Colours::black);
     
     g.drawImage(background, getLocalBounds().toFloat());
-    
-//    auto responseArea = getLocalBounds();
-//    auto responseArea = getRenderArea();
+
     auto responseArea = getAnalysisArea();
     
     auto w = responseArea.getWidth();
@@ -509,16 +500,11 @@ SSimpleEQAudioProcessorEditor::~SSimpleEQAudioProcessorEditor()
 void SSimpleEQAudioProcessorEditor::paint (juce::Graphics& g)
 {
     using namespace juce;
-    
-    // (Our component is opaque, so we must completely fill the background with a solid colour)
     g.fillAll(Colours::black);
 }
 
 void SSimpleEQAudioProcessorEditor::resized()
 {
-    // This is generally where you'll want to lay out the positions of any
-    // subcomponents in your editor..
-    
     auto bounds = getLocalBounds();
     
     float hratio = 25.f / 100.f;
