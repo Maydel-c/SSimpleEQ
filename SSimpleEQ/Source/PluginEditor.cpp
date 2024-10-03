@@ -187,13 +187,18 @@ juce::String RotarySliderWithLabels::getDisplayString() const
 }
 
 //==============================================================================
-ResponseCurveComponent::ResponseCurveComponent(SSimpleEQAudioProcessor& p) : audioProcessor(p)
+ResponseCurveComponent::ResponseCurveComponent(SSimpleEQAudioProcessor& p) :
+audioProcessor(p),
+leftChannelFifo(&audioProcessor.leftChannelFifo)
 {
     const auto& params = audioProcessor.getParameters();
     for(auto param : params)
     {
         param->addListener(this);
     }
+    
+    leftChannelFFTDataGenerator.changeOrder(FFTOrder::order2048);
+    monoBuffer.setSize(0, leftChannelFFTDataGenerator.getFFTSize());
     
     updateChain();
     startTimerHz(60);
@@ -215,6 +220,27 @@ void ResponseCurveComponent::parameterValueChanged(int parameterIndex, float new
 
 void ResponseCurveComponent::timerCallback()
 {
+    
+    juce::AudioBuffer<float> tempIncomingBuffer;
+    
+    while (leftChannelFifo->getNumCompleteBuffersAvailable() > 0) { // check until buffers are available
+        
+        if (leftChannelFifo -> getAudioBuffer(tempIncomingBuffer)) { // check if you can pull the buffer into the temp buffer
+            
+            auto size = tempIncomingBuffer.getNumSamples();
+            juce::FloatVectorOperations::copy(monoBuffer.getWritePointer(0, 0),
+                                              monoBuffer.getReadPointer(0, size),
+                                              monoBuffer.getNumSamples() - size);
+            
+            juce::FloatVectorOperations::copy(monoBuffer.getWritePointer(0, monoBuffer.getNumSamples() - size),
+                                              tempIncomingBuffer.getReadPointer(0, 0),
+                                              size);
+            
+            leftChannelFFTDataGenerator.produceFFTDataForRendering(monoBuffer, -48.f);
+            
+        }
+    }
+    
     if(parametersChanged.compareAndSetBool(false, true))
     {
         updateChain();
