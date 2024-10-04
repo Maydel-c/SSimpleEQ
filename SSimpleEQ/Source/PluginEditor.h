@@ -198,6 +198,30 @@ private:
     juce::String suffix;
 };
 
+struct PathProducer
+{
+    PathProducer(SingleChannelSampleFifo<SSimpleEQAudioProcessor::BlockType>& scsf) : leftChannelFifo(&scsf)
+    {
+        leftChannelFFTDataGenerator.changeOrder(FFTOrder::order2048);
+        monoBuffer.setSize(1, leftChannelFFTDataGenerator.getFFTSize());
+    }
+    
+    void process(juce::Rectangle<float> fftBounds, double sampleRate);
+    juce::Path getPath() { return leftChannelFFTPath; }
+    
+private:
+    SingleChannelSampleFifo<SSimpleEQAudioProcessor::BlockType>* leftChannelFifo;
+    
+    juce::AudioBuffer<float> monoBuffer;
+    
+    FFTDataGenerator<std::vector<float>> leftChannelFFTDataGenerator;
+    
+    AnalyzerPathGenerator<juce::Path> pathProducer;
+    
+    juce::Path leftChannelFFTPath;
+    
+};
+
 struct ResponseCurveComponent : juce::Component,
 juce::AudioProcessorParameter::Listener,
 juce::Timer
@@ -211,6 +235,7 @@ juce::Timer
     
     void paint(juce::Graphics& g) override;
     void resized() override;
+    
 private:
     SSimpleEQAudioProcessor& audioProcessor;
     juce::Atomic<bool> parametersChanged { false };
@@ -223,15 +248,7 @@ private:
     
     juce::Rectangle<int> getAnalysisArea();
     
-    SingleChannelSampleFifo<SSimpleEQAudioProcessor::BlockType>* leftChannelFifo;
-    
-    juce::AudioBuffer<float> monoBuffer;
-    
-    FFTDataGenerator<std::vector<float>> leftChannelFFTDataGenerator;
-    
-    AnalyzerPathGenerator<juce::Path> pathProducer;
-    
-    juce::Path leftChannelFFTPath;
+    PathProducer leftPathProducer, rightPathProducer;
     
 };
 

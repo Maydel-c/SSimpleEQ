@@ -154,14 +154,12 @@ void SSimpleEQAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, ju
         buffer.clear (i, 0, buffer.getNumSamples());
     
     updateFilters();
-    
-    buffer.clear();
  
     juce::dsp::AudioBlock<float> block (buffer);
     
-    buffer.clear();
-    juce::dsp::ProcessContextReplacing<float> stereoContext(block);
-    osc.process(stereoContext);
+//    buffer.clear();
+//    juce::dsp::ProcessContextReplacing<float> stereoContext(block);
+//    osc.process(stereoContext);
     
     auto leftBlock = block.getSingleChannelBlock(0);
     auto rightBlock = block.getSingleChannelBlock(1);
