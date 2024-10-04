@@ -77,6 +77,51 @@ void LookAndFeel::drawRotarySlider(juce::Graphics & g,
     }
 }
 
+void LookAndFeel::drawToggleButton(juce::Graphics &g,
+                                   juce::ToggleButton &toggleButton,
+                                   bool shouldDrawButtonAsHighlighted,
+                                   bool shouldDrawButtonAsDown)
+{
+    using namespace juce;
+    
+    Path powerButton;
+    
+    auto bounds = toggleButton.getLocalBounds();
+    
+// see the bounding box region for bypass buttons
+//    g.setColour(Colours::red);
+//    g.drawRect(bounds);
+    
+    auto size = jmin(bounds.getWidth(), bounds.getHeight()) - 6; // JUCE_LIVE_CONSTANT(6);
+    auto r = bounds.withSizeKeepingCentre(size, size).toFloat();
+    
+    float ang = 30.f; // JUCE_LIVE_CONSTANT(30);
+    
+    size -= 6; // JUCE_LIVE_CONSTANT(6);
+    
+    powerButton.addCentredArc(r.getCentreX(),
+                              r.getCentreY(),
+                              size * 0.5f,
+                              size * 0.5f,
+                              0.f,
+                              degreesToRadians(ang),
+                              degreesToRadians(360.f - ang),
+                              true);
+    
+    powerButton.startNewSubPath(r.getCentreX(), r.getY());
+    powerButton.lineTo(r.getCentre());
+    
+    PathStrokeType pst(2, PathStrokeType::JointStyle::curved);
+    
+    auto color = toggleButton.getToggleState() ? juce::Colours::dimgrey : juce::Colour(0u, 172u, 1u);
+    g.setColour(color);
+    
+    g.strokePath(powerButton, pst);
+    
+    // draw circle around the whole thing
+    g.drawEllipse(r, 2);
+}
+
 //==============================================================================
 void RotarySliderWithLabels::paint(juce::Graphics &g)
 {
@@ -600,12 +645,18 @@ analyzerEnabledButtonAttachment(audioProcessor.apvts, "Analyzer Enabled", analyz
         addAndMakeVisible(comp);
     }
     
+    peakBypassButton.setLookAndFeel(&lnf);
+    lowCutBypassButton.setLookAndFeel(&lnf);
+    highCutBypassButton.setLookAndFeel(&lnf);
 
     setSize (600, 480);
 }
 
 SSimpleEQAudioProcessorEditor::~SSimpleEQAudioProcessorEditor()
 {
+    peakBypassButton.setLookAndFeel(nullptr);
+    lowCutBypassButton.setLookAndFeel(nullptr);
+    highCutBypassButton.setLookAndFeel(nullptr);
 }
 
 //==============================================================================
