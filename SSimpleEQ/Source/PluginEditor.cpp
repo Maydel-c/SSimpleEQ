@@ -198,7 +198,8 @@ leftChannelFifo(&audioProcessor.leftChannelFifo)
     }
     
     leftChannelFFTDataGenerator.changeOrder(FFTOrder::order2048);
-    monoBuffer.setSize(0, leftChannelFFTDataGenerator.getFFTSize());
+    monoBuffer.setSize(1, leftChannelFFTDataGenerator.getFFTSize());
+    
     
     updateChain();
     startTimerHz(60);
@@ -228,6 +229,11 @@ void ResponseCurveComponent::timerCallback()
         if (leftChannelFifo -> getAudioBuffer(tempIncomingBuffer)) { // check if you can pull the buffer into the temp buffer
             
             auto size = tempIncomingBuffer.getNumSamples();
+            auto monoBufferSize = monoBuffer.getNumSamples();
+            
+        if (size <= monoBufferSize)
+        {
+            DBG("Inside if statement");
             juce::FloatVectorOperations::copy(monoBuffer.getWritePointer(0, 0),
                                               monoBuffer.getReadPointer(0, size),
                                               monoBuffer.getNumSamples() - size);
@@ -237,6 +243,10 @@ void ResponseCurveComponent::timerCallback()
                                               size);
             
             leftChannelFFTDataGenerator.produceFFTDataForRendering(monoBuffer, -48.f);
+        } else {
+            DBG("Size mismatch between tempIncomingBuffer and monoBuffer!");
+            jassertfalse; 
+        }
             
         }
     }
