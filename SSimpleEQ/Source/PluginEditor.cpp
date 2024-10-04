@@ -84,42 +84,69 @@ void LookAndFeel::drawToggleButton(juce::Graphics &g,
 {
     using namespace juce;
     
-    Path powerButton;
     
-    auto bounds = toggleButton.getLocalBounds();
-    
-// see the bounding box region for bypass buttons
-//    g.setColour(Colours::red);
-//    g.drawRect(bounds);
-    
-    auto size = jmin(bounds.getWidth(), bounds.getHeight()) - 6; // JUCE_LIVE_CONSTANT(6);
-    auto r = bounds.withSizeKeepingCentre(size, size).toFloat();
-    
-    float ang = 30.f; // JUCE_LIVE_CONSTANT(30);
-    
-    size -= 6; // JUCE_LIVE_CONSTANT(6);
-    
-    powerButton.addCentredArc(r.getCentreX(),
-                              r.getCentreY(),
-                              size * 0.5f,
-                              size * 0.5f,
-                              0.f,
-                              degreesToRadians(ang),
-                              degreesToRadians(360.f - ang),
-                              true);
-    
-    powerButton.startNewSubPath(r.getCentreX(), r.getY());
-    powerButton.lineTo(r.getCentre());
-    
-    PathStrokeType pst(2, PathStrokeType::JointStyle::curved);
-    
-    auto color = toggleButton.getToggleState() ? juce::Colours::dimgrey : juce::Colour(0u, 172u, 1u);
-    g.setColour(color);
-    
-    g.strokePath(powerButton, pst);
-    
-    // draw circle around the whole thing
-    g.drawEllipse(r, 2);
+    if( auto* pb = dynamic_cast<PowerButton*>(&toggleButton))
+    {
+        Path powerButton;
+        
+        auto bounds = toggleButton.getLocalBounds();
+        
+    // see the bounding box region for bypass buttons
+    //    g.setColour(Colours::red);
+    //    g.drawRect(bounds);
+        
+        auto size = jmin(bounds.getWidth(), bounds.getHeight()) - 6; // JUCE_LIVE_CONSTANT(6);
+        auto r = bounds.withSizeKeepingCentre(size, size).toFloat();
+        
+        float ang = 30.f; // JUCE_LIVE_CONSTANT(30);
+        
+        size -= 6; // JUCE_LIVE_CONSTANT(6);
+        
+        powerButton.addCentredArc(r.getCentreX(),
+                                  r.getCentreY(),
+                                  size * 0.5f,
+                                  size * 0.5f,
+                                  0.f,
+                                  degreesToRadians(ang),
+                                  degreesToRadians(360.f - ang),
+                                  true);
+        
+        powerButton.startNewSubPath(r.getCentreX(), r.getY());
+        powerButton.lineTo(r.getCentre());
+        
+        PathStrokeType pst(2, PathStrokeType::JointStyle::curved);
+        
+        auto color = toggleButton.getToggleState() ? juce::Colours::dimgrey : juce::Colour(0u, 172u, 1u);
+        g.setColour(color);
+        
+        g.strokePath(powerButton, pst);
+        
+        // draw circle around the whole thing
+        g.drawEllipse(r, 2);
+    }
+    else if( auto* analyzerButton = dynamic_cast<AnalyzerButton*>(&toggleButton))
+    {
+        auto color = ! toggleButton.getToggleState() ? juce::Colours::dimgrey : juce::Colour(0u, 172u, 1u);
+        
+        g.setColour(color);
+        
+        auto bounds = toggleButton.getLocalBounds();
+        g.drawRect(bounds);
+        
+        auto insetRect = bounds.reduced(4); // container for random path representing a waveform icon
+        
+        Path randomPath;
+        
+        Random r;
+        
+        randomPath.startNewSubPath(insetRect.getX(), insetRect.getY() + insetRect.getHeight() * r.nextFloat());
+        
+        for ( auto x = insetRect.getX() + 1; x < insetRect.getRight(); x+=2) {
+            randomPath.lineTo(x, insetRect.getY() + insetRect.getHeight() * r.nextFloat());
+        }
+        
+        g.strokePath(randomPath, PathStrokeType(1.f));
+    }
 }
 
 //==============================================================================
@@ -648,6 +675,7 @@ analyzerEnabledButtonAttachment(audioProcessor.apvts, "Analyzer Enabled", analyz
     peakBypassButton.setLookAndFeel(&lnf);
     lowCutBypassButton.setLookAndFeel(&lnf);
     highCutBypassButton.setLookAndFeel(&lnf);
+    analyzerEnabledButton.setLookAndFeel(&lnf);
 
     setSize (600, 480);
 }
@@ -657,6 +685,7 @@ SSimpleEQAudioProcessorEditor::~SSimpleEQAudioProcessorEditor()
     peakBypassButton.setLookAndFeel(nullptr);
     lowCutBypassButton.setLookAndFeel(nullptr);
     highCutBypassButton.setLookAndFeel(nullptr);
+    analyzerEnabledButton.setLookAndFeel(nullptr);
 }
 
 //==============================================================================
@@ -669,6 +698,15 @@ void SSimpleEQAudioProcessorEditor::paint (juce::Graphics& g)
 void SSimpleEQAudioProcessorEditor::resized()
 {
     auto bounds = getLocalBounds();
+    
+    auto analyzerEnabledArea = bounds.removeFromTop(25);
+    analyzerEnabledArea.setWidth(100);
+    analyzerEnabledArea.setX(5);
+    analyzerEnabledArea.removeFromTop(2);
+    
+    analyzerEnabledButton.setBounds(analyzerEnabledArea);
+    
+    bounds.removeFromTop(5);
     
     float hratio = 25.f / 100.f;
     
