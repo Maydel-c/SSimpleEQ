@@ -690,6 +690,34 @@ analyzerEnabledButtonAttachment(audioProcessor.apvts, "Analyzer Enabled", analyz
         }
     };
     
+    lowCutBypassButton.onClick = [safePtr]()
+    {
+        // first checking whether saftPtr exists
+        if(auto* comp = safePtr.getComponent())
+        {
+            // once we know it exists we can get the bypass state and set our slider's enablement accordingly
+            auto bypassed = comp->lowCutBypassButton.getToggleState();
+            
+            // If the band is bypassed the sliders should not be available
+            comp->lowCutFreqSlider.setEnabled( !bypassed );
+            comp->lowCutSlopeSlider.setEnabled( !bypassed );
+        }
+    };
+    
+    highCutBypassButton.onClick = [safePtr]()
+    {
+        // first checking whether saftPtr exists
+        if(auto* comp = safePtr.getComponent())
+        {
+            // once we know it exists we can get the bypass state and set our slider's enablement accordingly
+            auto bypassed = comp->highCutBypassButton.getToggleState();
+            
+            // If the band is bypassed the sliders should not be available
+            comp->highCutFreqSlider.setEnabled( !bypassed );
+            comp->highCutSlopeSlider.setEnabled( !bypassed );
+        }
+    };
+    
     peakBypassButton.setLookAndFeel(&lnf);
     lowCutBypassButton.setLookAndFeel(&lnf);
     highCutBypassButton.setLookAndFeel(&lnf);
