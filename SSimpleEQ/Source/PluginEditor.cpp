@@ -133,19 +133,19 @@ void LookAndFeel::drawToggleButton(juce::Graphics &g,
         auto bounds = toggleButton.getLocalBounds();
         g.drawRect(bounds);
         
-        auto insetRect = bounds.reduced(4); // container for random path representing a waveform icon
+//        auto insetRect = bounds.reduced(4); // container for random path representing a waveform icon
+//
+//        Path randomPath;
+//
+//        Random r;
+//
+//        randomPath.startNewSubPath(insetRect.getX(), insetRect.getY() + insetRect.getHeight() * r.nextFloat());
+//
+//        for ( auto x = insetRect.getX() + 1; x < insetRect.getRight(); x+=2) {
+//            randomPath.lineTo(x, insetRect.getY() + insetRect.getHeight() * r.nextFloat());
+//        }
         
-        Path randomPath;
-        
-        Random r;
-        
-        randomPath.startNewSubPath(insetRect.getX(), insetRect.getY() + insetRect.getHeight() * r.nextFloat());
-        
-        for ( auto x = insetRect.getX() + 1; x < insetRect.getRight(); x+=2) {
-            randomPath.lineTo(x, insetRect.getY() + insetRect.getHeight() * r.nextFloat());
-        }
-        
-        g.strokePath(randomPath, PathStrokeType(1.f));
+        g.strokePath(analyzerButton->randomPath, PathStrokeType(1.f));
     }
 }
 
