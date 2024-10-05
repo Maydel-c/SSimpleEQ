@@ -69,11 +69,11 @@ void LookAndFeel::drawRotarySlider(juce::Graphics & g,
         r.setCentre(bounds.getCentre());
         
         // making the text background black
-        g.setColour(Colours::black);
+        g.setColour(enabled ? Colours::black : Colours::darkgrey);
         g.fillRect(r);
         
         // adding text making the text white
-        g.setColour(Colours::white);
+        g.setColour(enabled ? Colours::white : Colours::lightgrey);
         g.drawFittedText(text, r.toNearestInt(), juce::Justification::centred, 1); // accepts Rectangle<int> as 2nd argument
         
     }
