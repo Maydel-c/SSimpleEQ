@@ -23,12 +23,14 @@ void LookAndFeel::drawRotarySlider(juce::Graphics & g,
     
     auto bounds = Rectangle<float>(x, y, width, height);
     
+    auto enabled = slider.isEnabled();
+    
     // creating the bg for slider
-    g.setColour(Colour(97u, 18u, 167u));
+    g.setColour(enabled ? Colour(97u, 18u, 167u) : Colours::darkgrey);
     g.fillEllipse(bounds);
     
     // creating the border for slider
-    g.setColour(Colour(255u, 154u, 1u));
+    g.setColour(enabled ? Colour(255u, 154u, 1u) : Colours::grey);
     g.drawEllipse(bounds, 1.f);
     
     
@@ -671,6 +673,22 @@ analyzerEnabledButtonAttachment(audioProcessor.apvts, "Analyzer Enabled", analyz
     {
         addAndMakeVisible(comp);
     }
+    
+    auto safePtr = juce::Component::SafePointer<SSimpleEQAudioProcessorEditor>(this);
+    peakBypassButton.onClick = [safePtr]()
+    {
+        // first checking whether saftPtr exists
+        if(auto* comp = safePtr.getComponent())
+        {
+            // once we know it exists we can get the bypass state and set our slider's enablement accordingly
+            auto bypassed = comp->peakBypassButton.getToggleState();
+            
+            // If the band is bypassed the sliders should not be available
+            comp->peakFreqSlider.setEnabled( !bypassed );
+            comp->peakGainSlider.setEnabled( !bypassed );
+            comp->peakQualitySlider.setEnabled( !bypassed );
+        }
+    };
     
     peakBypassButton.setLookAndFeel(&lnf);
     lowCutBypassButton.setLookAndFeel(&lnf);
